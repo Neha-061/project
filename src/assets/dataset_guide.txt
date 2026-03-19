@@ -1,0 +1,44 @@
+1.
+
+Within the json list add data for images ,ex:
+[
+    {
+        "image": ".500_images/<image name>",
+        "conversations": [
+            {
+                "from": "human",
+                "value": "<image>\nAnalyze this image. The predicted quality score is <Your personal score>.
+                            What visual characteristics can you identify?"
+            },
+            {
+                "from": "gpt",
+                "value": "The image shows distorted fingers and unnatural hand structure."
+            }
+        ]
+    },
+]
+
+
+
+2.
+
+GPT prompt template:
+
+im giving this image a score of 3.5/10. the over all silloate of the figure in not clear, Image is quite a blur, the overall construction and features of the subject is also not clear
+now format my opinion according to this format and give me one single json string for it. add any few "KEY" points if found and i falied to mention
+
+"
+Summary:
+The image shows a person with visible distortions in the hand and facial structure.
+
+Key Observations:
+- The left hand has six fingers.
+- The fingers appear unnaturally shaped.
+- The facial structure is slightly distorted.
+
+Conclusion:
+The image is of poor quality due to anatomical inaccuracies and unnatural features.
+"
+provide the final output string some thing like this "Summary:\nThe image depicts a person with noticeable distortions in the hand and facial features.\n\nKey Observations:\n- The left hand has six fingers.\n- The finger structure appears unnatural.\n- The face shows slight asymmetry.\n\nConclusion:\nThe image is of poor quality due to anatomical inconsistencies and unrealistic features."
+
+
