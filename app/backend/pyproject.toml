@@ -9,7 +9,11 @@ dependencies = [
     "matplotlib>=3.10.8",
     "mediapipe==0.10.21",
     "opencv-python>=4.11.0.86",
+    "pillow>=12.1.1",
     "python-multipart>=0.0.22",
+    "timm>=1.0.26",
+    "torch>=2.11.0",
+    "torchvision>=0.26.0",
     "ultralytics>=8.4.27",
     "uvicorn>=0.42.0",
 ]

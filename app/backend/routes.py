@@ -3,8 +3,12 @@ import shutil
 import os
 import numpy as np
 import cv2
-from services import run_pipeline
 import time
+from typing import List
+from PIL import Image
+import io
+from services import run_pipeline, get_image_score
+
 
 
 router = APIRouter()
@@ -90,3 +94,48 @@ async def analyze(request: Request,file: UploadFile = File(...)):
     """
 
     return result
+
+
+
+@router.post("/score")
+async def score_images(
+    request: Request,
+    original: UploadFile = File(...),
+    crops: List[UploadFile] = File(...)
+):
+    try:
+        eff_model = request.app.state.eff_model
+        eff_transform = request.app.state.eff_transform
+        device = request.app.state.device
+
+        # -------- ORIGINAL IMAGE --------
+        original_bytes = await original.read()
+        original_image = Image.open(io.BytesIO(original_bytes)).convert("RGB")
+
+        original_score = get_image_score(original_image, eff_model, eff_transform, device)
+
+        # -------- CROPPED IMAGES --------
+        crop_scores = []
+
+        for crop in crops:
+            crop_bytes = await crop.read()
+            crop_image = Image.open(io.BytesIO(crop_bytes)).convert("RGB")
+
+            score = get_image_score(crop_image, eff_model, eff_transform, device)
+            crop_scores.append(score)
+
+        # -------- AVERAGE --------
+        avg_crop_score = sum(crop_scores) / len(crop_scores) if crop_scores else 0
+
+        # -------- FINAL SCORE --------
+        final_score = (0.6 * original_score) + (0.4 * avg_crop_score)
+
+        return {
+            "original_score": original_score,
+            "crop_scores": crop_scores,
+            "average_crop_score": avg_crop_score,
+            "final_score": final_score
+        }
+
+    except Exception as e:
+        return {"error": str(e)}

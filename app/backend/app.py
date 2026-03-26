@@ -4,6 +4,9 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
 import mediapipe as mp
+import torch
+import timm
+from torchvision import transforms
 
 
 
@@ -14,6 +17,24 @@ async def lifespan(app: FastAPI):
     app.state.model = YOLO("backend/artifacts/yolov8n.pt")
     app.state.mp_face = mp.solutions.face_detection
     app.state.mp_hands = mp.solutions.hands
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    eff_model = timm.create_model("efficientnet_b0", pretrained=True)
+    eff_model.eval()
+    eff_model.to(device)
+    
+    eff_transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225]
+        )
+    ])
+    
+    app.state.eff_model = eff_model
+    app.state.eff_transform = eff_transform
+    app.state.device = device
 
     yield
 

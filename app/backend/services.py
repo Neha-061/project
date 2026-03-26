@@ -84,3 +84,19 @@ def run_pipeline(image, model, mp_face, mp_hands, save_dir):
         "faces": faces,
         "hands": hands_list
     }
+
+
+def get_image_score(image, model, transform, device):
+    image = transform(image).unsqueeze(0).to(device)
+
+    with torch.no_grad():
+        output = model(image)
+        probs = torch.softmax(output, dim=1)
+
+        confidence = torch.max(probs).item()
+        entropy = -torch.sum(probs * torch.log(probs + 1e-10)).item()
+        entropy_score = 1 / (1 + entropy)
+
+        score = (0.7 * confidence) + (0.3 * entropy_score)
+
+    return score
