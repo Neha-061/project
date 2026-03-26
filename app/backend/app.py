@@ -14,9 +14,17 @@ from torchvision import transforms
 async def lifespan(app: FastAPI):
     print("Life Cycle Started!")
 
+    """
+    YOLO model initialization
+    """
+
     app.state.model = YOLO("backend/artifacts/yolov8n.pt")
     app.state.mp_face = mp.solutions.face_detection
     app.state.mp_hands = mp.solutions.hands
+
+    """
+    EfficientNet model initialization
+    """
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     eff_model = timm.create_model("efficientnet_b0", pretrained=True)

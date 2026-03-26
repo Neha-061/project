@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException,Request
+from fastapi import APIRouter, UploadFile, File, Form ,Request
 import shutil
 import os
 import numpy as np
@@ -66,7 +66,6 @@ async def analyze(request: Request,file: UploadFile = File(...)):
     req_id = str(int(time.time()*1000))
     save_dir = os.path.join(UPLOAD_FOLDER, req_id)
     os.makedirs(save_dir, exist_ok=True)
-    f_name = file.filename
 
     """
     Uploading the main images and saving it
@@ -93,7 +92,45 @@ async def analyze(request: Request,file: UploadFile = File(...)):
     Generation Effiecient Net score
     """
 
-    return result
+    eff_model = request.app.state.eff_model
+    eff_transform = request.app.state.eff_transform
+    device = request.app.state.device
+
+    # -------- ORIGINAL IMAGE --------
+    original_image = Image.open(io.BytesIO(contents)).convert("RGB")
+    original_score = get_image_score(original_image, eff_model, eff_transform, device)
+
+    # -------- CROPPED IMAGES --------
+    crop_scores = []
+    for filename in os.listdir(save_dir):
+        path = os.path.join(save_dir, filename)
+
+        try:
+            crop_image = Image.open(path).convert("RGB")  # 👈 only works if it's an image
+
+            score = get_image_score(crop_image, eff_model, eff_transform, device)
+            crop_scores.append(score)
+
+        except Exception:
+            continue   # 👈 skip non-image files silently
+
+    
+    # -------- AVERAGE --------
+    avg_crop_score = sum(crop_scores) / len(crop_scores) if crop_scores else 0
+
+    # -------- FINAL SCORE --------
+    final_score = (0.6 * original_score) + (0.4 * avg_crop_score)
+
+    final_score = round(final_score * 10, 1)
+
+
+    return {
+        "paths": result,
+        "original_score": original_score,
+        "crop_scores": crop_scores,
+        "average_crop_score": avg_crop_score,
+        "final_score": final_score
+    }
 
 
 

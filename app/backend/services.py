@@ -1,5 +1,7 @@
 import cv2
 import os
+import torch
+
 
 def run_pipeline(image, model, mp_face, mp_hands, save_dir):
 
