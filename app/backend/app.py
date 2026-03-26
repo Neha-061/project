@@ -11,13 +11,15 @@ import mediapipe as mp
 async def lifespan(app: FastAPI):
     print("Life Cycle Started!")
 
-    app.state.model = YOLO("artifacts/yolov8n.pt")
+    app.state.model = YOLO("backend/artifacts/yolov8n.pt")
     app.state.mp_face = mp.solutions.face_detection
     app.state.mp_hands = mp.solutions.hands
 
     yield
 
     print("shutting down...")
+
+    
 app = FastAPI(lifespan = lifespan)
 app.add_middleware(
     CORSMiddleware,

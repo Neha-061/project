@@ -1,15 +1,10 @@
 import cv2
 import os
-import time
 
-def run_pipeline(image, model, mp_face, mp_hands):
+def run_pipeline(image, model, mp_face, mp_hands, save_dir):
 
     h, w, _ = image.shape
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-    # ===== create request folder =====
-    req_id = str(int(time.time()*1000))
-    save_dir = os.path.join("crops", req_id)
 
     os.makedirs(save_dir, exist_ok=True)
 
